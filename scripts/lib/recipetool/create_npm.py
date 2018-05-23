@@ -21,6 +21,7 @@ import subprocess
 import tempfile
 import shutil
 import json
+from functools import reduce
 from recipetool.create import RecipeHandler, split_pkg_licenses, handle_license_vars
 
 logger = logging.getLogger('recipetool')
@@ -66,6 +67,9 @@ class NpmRecipeHandler(RecipeHandler):
             license = data['license']
             if isinstance(license, dict):
                 license = license.get('type', None)
+            if isinstance(license, list):
+                # deprecated format but still present in npm.org
+                license = reduce((lambda x, y: '%s OR %s' % (x, y)), map(lambda x: '(%s)' % x, license))
             if license:
                 if 'OR' in license:
                     license = license.replace('OR', '|')
